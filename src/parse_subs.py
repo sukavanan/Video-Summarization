@@ -6,11 +6,13 @@ import re
 from itertools import groupby
 
 # Initialize objects
+
 logger = logging.Logger('Logger')
 parser = argparse.ArgumentParser()
 parser.add_argument('-f','--filename', required=True, help='.srt file to parse')
 parser.add_argument('-o','--output', help='Output json file, default is \'output.json\'')
 args = parser.parse_args()
+
 # Check input validity
 
 if not os.path.exists(args.filename):
@@ -55,6 +57,8 @@ def parse_subtitle(filename, vtt=False):
 				count+=1
 	
 	return output_subtitle
+
+# Main
 
 if __name__ == "__main__":
 
