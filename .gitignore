@@ -1,2 +1,3 @@
-*.srt
-*.vtt
+sample_data/
+.DS_Store
+.ipynb_checkpoints
