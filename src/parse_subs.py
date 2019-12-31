@@ -70,8 +70,12 @@ if __name__ == "__main__":
 		logger.error("ERROR: Unsupported filetype")
 	
 	if args.output is None:
-		with open(os.path.join(os.path.split(args.filename)[0], 'output.json'), 'w') as f:
-			json.dump(output, f)
+		if os.path.exists('./intermediate/'):
+			with open('./intermediate/output.json', 'w') as f:
+				json.dump(output, f)
+		else:		
+			with open(os.path.join(os.path.split(args.filename)[0], 'output.json'), 'w') as f:
+				json.dump(output, f)
 	else:
 		with open(args.output, 'w') as f:
 			json.dump(output, f)
