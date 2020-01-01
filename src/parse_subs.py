@@ -4,6 +4,7 @@ import logging
 import os
 import re
 from itertools import groupby
+from datetime import datetime, date, time
 
 # Initialize objects
 
@@ -21,10 +22,22 @@ if not os.path.exists(args.filename):
 
 # .srt and .vtt handler
 
+def compute_duration(start_time, end_time):
+	# Difference of end_time and start_time
+	start_time = time.fromisoformat(start_time.replace(',','.'))
+	end_time = time.fromisoformat(end_time.replace(',','.'))
+
+	difference = datetime.combine(date.min, end_time) - datetime.combine(date.min, start_time)
+	return round(difference.seconds+difference.microseconds/1000000, 3)
+
 def parse_subtitle(filename, vtt=False):
 	output_subtitle = []
 	read_lines = []
+	
+	###
 	# Read file in chunks. Helps handle large files.
+	###
+
 	with open(filename, 'r') as file:
 		chunk = []
 		for line in file:
@@ -33,6 +46,7 @@ def parse_subtitle(filename, vtt=False):
 				chunk = []
 			else:
 				chunk.append(line.strip('\ufeff\t '))
+	# .srt files
 	if not vtt:
 		for line in read_lines:
 			subtitle_element = dict()
@@ -41,9 +55,11 @@ def parse_subtitle(filename, vtt=False):
 				subtitle_element['index'] = matches.group(1).strip()
 				subtitle_element['start_time'] = matches.group(2).strip()
 				subtitle_element['end_time'] = matches.group(3).strip()
+				subtitle_element['duration'] = compute_duration(subtitle_element['start_time'], subtitle_element['end_time'])
 				subtitle_element['text'] = matches.group(4).strip()
 				output_subtitle.append(subtitle_element)
 	else:
+		# .vtt files
 		count=1
 		for line in read_lines:
 			subtitle_element = dict()
@@ -52,6 +68,7 @@ def parse_subtitle(filename, vtt=False):
 				subtitle_element['index'] = count
 				subtitle_element['start_time'] = matches.group(1).strip()
 				subtitle_element['end_time'] = matches.group(2).strip()
+				subtitle_element['duration'] = compute_duration(subtitle_element['start_time'], subtitle_element['end_time'])
 				subtitle_element['text'] = matches.group(3).strip()
 				output_subtitle.append(subtitle_element)
 				count+=1
