@@ -1,4 +1,16 @@
+# Ignore folders
 inputs/
 intermediate/
+.texpadtmp/
+
+# Ignore general files
 .DS_Store
 .ipynb_checkpoints
+
+# Ignore LaTeX intermediates and pdfs
+_minted-Documentation/
+
+*.aux
+*.log
+*.out
+*.pdf
