@@ -1,11 +1,13 @@
 # Ignore folders
 inputs/
 intermediate/
+outputs/
+jupyter/
 .texpadtmp/
 
 # Ignore general files
 .DS_Store
-.ipynb_checkpoints
+*.mp4
 
 # Ignore LaTeX intermediates and pdfs
 _minted-Documentation/
