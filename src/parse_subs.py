@@ -52,7 +52,7 @@ def parse_subtitle(filename, vtt=False):
 			subtitle_element = dict()
 			matches = re.match(r"([0-9]+)\n(.*?)-->(.*?)\n((?:\n|.)*?)\n$", line)
 			if matches is not None:
-				subtitle_element['index'] = matches.group(1).strip()
+				subtitle_element['index'] = int(matches.group(1).strip())
 				subtitle_element['start_time'] = matches.group(2).strip()
 				subtitle_element['end_time'] = matches.group(3).strip()
 				subtitle_element['duration'] = compute_duration(subtitle_element['start_time'], subtitle_element['end_time'])
