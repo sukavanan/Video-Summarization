@@ -5,6 +5,7 @@ outputs/
 jupyter/
 .texpadtmp/
 .vscode/
+ignored/
 
 # Ignore general files
 .DS_Store
