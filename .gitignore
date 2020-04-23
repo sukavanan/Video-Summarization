@@ -4,6 +4,7 @@ intermediate/
 outputs/
 jupyter/
 .texpadtmp/
+.vscode/
 
 # Ignore general files
 .DS_Store
