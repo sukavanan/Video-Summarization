@@ -7,7 +7,7 @@ import json
 import os
 # %%
 import string
-
+import time as t
 # %%
 import nltk
 import scipy
@@ -16,10 +16,9 @@ from nltk.stem import WordNetLemmatizer
 # %%
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+from common_functions import FLEXIBILITY, TARGET_LENGTH
 
-# If there's at most `flexibility` elements between indices, select all of them.
-flexibility = 3
-target_length = 180 # (only a guideline) Crop might be longer including the important pieces between subs.
+start_time = t.time()
 
 
 try:
@@ -60,11 +59,6 @@ def stop_word_removal(data):
 # %%
 stopped_stemmed_data = stop_word_removal(data)
 
-
-# %%
-stopped_stemmed_data
-print(len(stopped_stemmed_data), stopped_stemmed_data[-1])
-
 # %% [markdown]
 # ### Load the document as a corpus and obtain tf-idf vectors
 
@@ -87,21 +81,23 @@ for entry,element in zip(stopped_stemmed_data, summed_tfidf):
 
 
 # %%
-stopped_stemmed_data[15]
-
-
-# %%
 sorted_list = sorted(stopped_stemmed_data, key=lambda k: k['tfidf_sum'], reverse=True) 
 
+
+x = []
+for entry in sorted_list:
+    e = entry['index'],entry['tfidf_sum'],entry['duration']
+    x.append(e)
+# print(x)
 
 # %%
 # Target length of the output video in seconds
 naive_summary_elements = []
 
 for entry in sorted_list:
-    target_length-=entry['duration']
+    TARGET_LENGTH-=entry['duration']
     naive_summary_elements.append(entry)
-    if target_length<0:
+    if TARGET_LENGTH<0:
         break
 
 
@@ -115,11 +111,44 @@ for i in sorted(naive_summary_elements, key=lambda k: k['index']):
 flexible_summary = list(selected_indices)
 idx_sorted_list = sorted(stopped_stemmed_data, key= lambda k: k['index'])
 for idx in range(len(selected_indices)-1):
-    # Check succeding flexibility
-    if selected_indices[idx+1]-selected_indices[idx] <= flexibility and selected_indices[idx+1]-selected_indices[idx] > 1:
+    # Check succeeding FLEXIBILITY
+    if selected_indices[idx+1]-selected_indices[idx] <= FLEXIBILITY and selected_indices[idx+1]-selected_indices[idx] > 1:
         flexible_summary.extend(list(range(selected_indices[idx]+1,selected_indices[idx+1])))
 flexible_summary = sorted(flexible_summary)
 
+# Create colors for bar gr
+# colors = []
+# for i in range(len(stopped_stemmed_data)):
+#     if i in flexible_summary and i not in selected_indices:
+#         colors.append('g')
+#     elif i in selected_indices:
+#         colors.append('b')
+#     else:
+#         colors.append('r')
+# # %%
+# import matplotlib.pyplot as plt
+# y = []
+# x = []
+# for entry in stopped_stemmed_data:
+#     y.append(entry['tfidf_sum'])
+#     x.append(entry['index'])
+# # print(x,y)
+# plt.bar(x,y, color=colors)
+# plt.xlabel("Subtitle Index")
+# plt.ylabel("Tf-idf Sum")
+# plt.legend()
+# plt.show()
+
+
+# Generate an Output Subtitle
+
+# count = 1
+# output_string = ""
+# for i in flexible_summary:
+#     output_string += f"{count}\n{data[i]['start_time']} --> {data[i]['end_time']}\n{data[i]['text']}\n\n"
+#     count += 1
+# with open("../outputs/output.srt", "w") as f:
+#     f.write(output_string)
 
 # %%
 def get_clips_durations(chosen_indices):
@@ -138,13 +167,18 @@ def get_clips_durations(chosen_indices):
     return sets_of_clips
 sets_of_clips = get_clips_durations(flexible_summary)
 
+print(sets_of_clips, len(sets_of_clips))
+
 final_summary_list = []
 for index,clips in enumerate(sets_of_clips):
     data = dict()
     data['clip_no'] = index+1
+    # print(clips[0], stopped_stemmed_data[clips[0]]['start_time'])
     data['clip_start'] = stopped_stemmed_data[clips[0]]['start_time']
     data['clip_end'] = stopped_stemmed_data[clips[-1]]['end_time']
     final_summary_list.append(data)
 
 with open('../intermediate/clip_data.json', 'w') as f:
     json.dump(final_summary_list, f)
+    
+print(f"Completed text parsing {round(t.time()-start_time, 2)} seconds")
