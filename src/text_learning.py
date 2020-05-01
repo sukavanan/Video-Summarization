@@ -27,7 +27,7 @@ try:
 except:
 	pass
 
-with open('../intermediate/output.json') as f:
+with open('../intermediate/How to Move the Sun - Stellar Engines.json') as f:
     data = json.load(fp=f)
 
 
@@ -116,6 +116,7 @@ for idx in range(len(selected_indices)-1):
         flexible_summary.extend(list(range(selected_indices[idx]+1,selected_indices[idx+1])))
 flexible_summary = sorted(flexible_summary)
 
+print(flexible_summary)
 # Create colors for bar gr
 # colors = []
 # for i in range(len(stopped_stemmed_data)):

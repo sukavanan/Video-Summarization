@@ -6,6 +6,7 @@ jupyter/
 .texpadtmp/
 .vscode/
 ignored/
+__pycache__/
 
 # Ignore general files
 .DS_Store
