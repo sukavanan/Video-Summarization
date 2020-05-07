@@ -24,7 +24,7 @@ def assign_workers(ip_video_path, clip_data, output_path, encoder):
 	os.system(f"ffmpeg -nostats -loglevel 0 -f concat -i ../intermediate/videofiles.txt -c copy -fflags +genpts {output_path}")
 	print(f"[INFO] {round(t.time()-start_time, 0)} seconds using {encoder}")
 
-def start_clip_generation(input_video_path, clip_data_path, encoder, output_path='../outputs/output.mp4'):
+def start_clip_generation(input_video_path, clip_data_path, encoder, output_path):
 	with open(clip_data_path, 'r') as f:
 		clip_data = json.load(f)
 	clip_data = round_durations(get_clip_duration(clip_data))

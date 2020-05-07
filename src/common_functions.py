@@ -9,7 +9,7 @@ VIDEO_NAME = "Hypothesis\ testing-II.mp4"
 
 # If there's at most `flexibility` unselected elements between selected indices, select all of them.
 FLEXIBILITY = 3
-TARGET_LENGTH = 180 # (only a guideline) Crop might be longer including the important pieces between subs.
+TARGET_LENGTH = 33 # (only a guideline) Crop might be longer including the important pieces between subs.
 
 # This function stores the duration of the clip in a duration entry of the clip_list
 def get_clip_duration(clip_list):

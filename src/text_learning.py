@@ -27,7 +27,7 @@ try:
 except:
 	pass
 
-with open('../intermediate/How to Move the Sun - Stellar Engines.json') as f:
+with open('../intermediate/4wU_LUjG5Ic_parsed.json') as f:
     data = json.load(fp=f)
 
 
@@ -155,17 +155,23 @@ print(flexible_summary)
 def get_clips_durations(chosen_indices):
     # Find out contiguous sequences of indices and get the timestamps of the videos to cut them.
     sets_of_clips = []
-    temp = []
-    for idx in range(len(chosen_indices)-1):
-        if chosen_indices[idx] not in temp:
-            temp.append(chosen_indices[idx])
-        if chosen_indices[idx+1]-chosen_indices[idx] == 1:
-            temp.append(chosen_indices[idx+1])
-            continue
-        else:
-            sets_of_clips.append(temp)
-            temp = []
+    # temp = []
+    # for idx in range(len(chosen_indices)-1):
+    #     if chosen_indices[idx] not in temp:
+    #         temp.append(chosen_indices[idx])
+    #     if chosen_indices[idx+1]-chosen_indices[idx] == 1:
+    #         temp.append(chosen_indices[idx+1])
+    #         continue
+    #     else:
+    #         sets_of_clips.append(temp)
+    #         temp = []
+    from itertools import groupby
+    from operator import itemgetter
+    for key, group in groupby(enumerate(chosen_indices), lambda i: i[0] - i[1]): 
+        group = list(map(itemgetter(1), group))
+        sets_of_clips.append(group)
     return sets_of_clips
+    
 sets_of_clips = get_clips_durations(flexible_summary)
 
 print(sets_of_clips, len(sets_of_clips))

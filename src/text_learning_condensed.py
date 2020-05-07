@@ -2,6 +2,8 @@ import json
 import os
 import string
 import time as t
+from itertools import groupby
+from operator import itemgetter
 
 import nltk
 import scipy
@@ -54,11 +56,11 @@ def indices_selected(naive_summary_elements):
         selected_indices.append(i['index'])
     return selected_indices
 
-def flexibly_extend_summary(selected_indices):
+def flexibly_extend_summary(selected_indices, flexibility):
     flexible_summary = list(selected_indices)
     for idx in range(len(selected_indices)-1):
         # Check succeeding FLEXIBILITY
-        if selected_indices[idx+1]-selected_indices[idx] <= FLEXIBILITY and selected_indices[idx+1]-selected_indices[idx] > 1:
+        if selected_indices[idx+1]-selected_indices[idx] <= flexibility and selected_indices[idx+1]-selected_indices[idx] > 1:
             flexible_summary.extend(list(range(selected_indices[idx]+1,selected_indices[idx+1])))
     flexible_summary = sorted(flexible_summary)
     return flexible_summary
@@ -66,16 +68,9 @@ def flexibly_extend_summary(selected_indices):
 def get_clips_durations(chosen_indices):
     # Find out contiguous sequences of indices and get the timestamps of the videos to cut them.
     sets_of_clips = []
-    temp = []
-    for idx in range(len(chosen_indices)-1):
-        if chosen_indices[idx] not in temp:
-            temp.append(chosen_indices[idx])
-        if chosen_indices[idx+1]-chosen_indices[idx] == 1:
-            temp.append(chosen_indices[idx+1])
-            continue
-        else:
-            sets_of_clips.append(temp)
-            temp = []
+    for _, group in groupby(enumerate(chosen_indices), lambda i: i[0] - i[1]): 
+        group = list(map(itemgetter(1), group))
+        sets_of_clips.append(group)
     return sets_of_clips
 
 def get_final_clip_timestamps(sets_of_clips, stopped_stemmed_data):
@@ -89,7 +84,7 @@ def get_final_clip_timestamps(sets_of_clips, stopped_stemmed_data):
         final_summary_list.append(data)
     return final_summary_list
 
-def return_clips(path, output_path='../intermediate/clip_data.json'):
+def return_clips(path, output_path='../intermediate/clip_data.json', flexibility=FLEXIBILITY, length=TARGET_LENGTH):
     with open(path) as f:
         data = json.load(fp=f)
 
@@ -106,13 +101,13 @@ def return_clips(path, output_path='../intermediate/clip_data.json'):
         entry['tfidf_sum'] = element[0,0]
 
     sorted_list = sorted(stopped_stemmed_data, key=lambda k: k['tfidf_sum'], reverse=True) 
-
-    naive_summary_elements = return_naive_summary(sorted_list, TARGET_LENGTH)
+    naive_summary_elements = return_naive_summary(sorted_list, length)
     selected_indices = indices_selected(naive_summary_elements)
 
-    flexible_summary = flexibly_extend_summary(selected_indices)
+    flexible_summary = flexibly_extend_summary(selected_indices, flexibility)
 
     sets_of_clips = get_clips_durations(flexible_summary)
+    print(sets_of_clips)
     final_summary_list = get_final_clip_timestamps(sets_of_clips, stopped_stemmed_data)
     with open(output_path, 'w') as f:
         json.dump(final_summary_list, f)
