@@ -1,10 +1,10 @@
 import glob, subprocess, os, json
-from parse_subs import parse_subtitle, parse_subtitle_yt
+from parse_subs import parse_subtitle, parse_subtitle_yt, compute_duration
 from text_learning_condensed import return_clips
 from create_clips import start_clip_generation
 from api_parser import parse_subtitle_api
 
-file_id = ''
+file_id = 'EE-bNr36nyA'
 proportion = 0.2
 flexibility = 3
 
@@ -66,12 +66,40 @@ if __name__ == "__main__":
         h, m, s = a.split(':')
         duration = int(int(h) * 3600 + int(m) * 60 + float(s))
         print(f"[INFO] Target length: {int(duration*proportion)} seconds")
-        try:
-            return_clips(f"../intermediate/{video}_parsed.json", output_path=f"../intermediate/{video}_clip_list.json", flexibility=flexibility, length=int(duration*proportion))
-        except ValueError:
-            print("Skip.")
+        x = []
+        y = []
+        for i in range(100):
+            try:
+                return_clips(f"../intermediate/{video}_parsed.json", output_path=f"../intermediate/{video}_clip_list.json", flexibility=i, length=int(duration*proportion))
+            except ValueError:
+                print("Skip.")
+            with open(f'../intermediate/{video}_clip_list.json', 'r') as f:
+                d = json.load(f)
+                total = 0
+                for dic in d:
+                    total += compute_duration(dic['clip_start'], dic['clip_end'])
+            x.append(i)
+            y.append(total)
+            # print(i, total)
+            if len(d) == 1:
+                break
         print(f"[INFO] Generated {video}\'s clip data")
-        print(f"[INFO] Starting Subclip generation for {video}")
+        # print(duration*proportion, duration)
+
+        import matplotlib.pyplot as plt
+        # plt.plot(x, [duration*proportion]*len(x),'g')
+        plt.axhline(y=duration*proportion,color='g', alpha=0.5)
+        plt.xlabel('Flexibility Parameter')
+        # plt.plot(x, [duration]*len(x),'r', )
+        plt.axhline(y=duration, color='r', alpha=0.5)
+        plt.ylabel('Video Length')
+        plt.plot(x, y)
+        plt.axis([None,None, 0,None])
+        plt.legend(['Target Length', 'Input Length', 'Summary Length'], loc=1)
+        plt.savefig(f'../outputs/varyf/{video}_vary_f.png', dpi=300)
+        plt.clf()
+        # plt.show()
+        # print(f"[INFO] Starting Subclip generation for {video}")
         # start_clip_generation(file_list[video]['video'], clip_data_path=f"../intermediate/{video}_clip_list.json", encoder="h264_videotoolbox", output_path=f"../outputs/{video}_summary.mp4")
         # if len(file_list) > 1:
         #     print("[INFO] Cleaning Intermediate folder")
