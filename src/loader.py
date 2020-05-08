@@ -4,6 +4,7 @@ import time as t
 from pprint import pprint
 import subprocess
 
+from create_clips import get_clip_duration, round_durations
 from parse_subs import parse_subtitle, parse_subtitle_yt
 from text_learning_condensed import return_clips
 from api_parser import parse_subtitle_api
@@ -24,7 +25,10 @@ def assign_workers(ip_video_path, clip_data, output_path, encoder):
     with open('../intermediate/videofiles.txt', 'w') as f:
         for entry in clip_data:
             f.write(f"file \'{entry['clip_no']}.mp4\'\n")
-    os.system(f"ffmpeg -nostats -loglevel 0 -f concat -i ../intermediate/videofiles.txt -c copy -fflags +genpts {output_path}")
+    print(f"[INFO] Starting final summary video stitching.")
+    t.sleep(3)
+    output_path = output_path.replace(' ', r'\ ')
+    subprocess.call(f"ffmpeg -hide_banner -loglevel panic -f concat -i ../intermediate/videofiles.txt -c copy -fflags +genpts {output_path}", shell=True)
     print(f"[INFO] {round(t.time()-start_time, 0)} seconds using {encoder}")
     if len(file_list) > 1:
         print("[INFO] Cleaning Intermediate folder")
@@ -39,7 +43,9 @@ parser.add_argument("-y", "--youtube", help="Youtube link of a video to download
 parser.add_argument("-e", "--encoder", help="Encoder to use.", default="h264_videotoolbox")
 parser.add_argument("-p", "--use-youtube-parser", help="Manually use the youtube subtitle parser.", action="store_true")
 parser.add_argument("-a", "--use-api-parser", help="Use a different parser that downloads subtitles directly using an XML format. More accurate.", action="store_true")
-args = parser.parse_args()
+parser.add_argument("-f", "--flexibility", help="Flexibility Parameter", type=int)
+parser.add_argument("-l", "--video-length", help="Length of the output video in seconds", type=int)
+args = parser.parse_args() 
 
 if args.use_youtube_parser:
     print("[INFO] Manually using Youtube Parser")
@@ -65,7 +71,10 @@ if len(files) == 0:
         print("[ERROR] No auto-generated subtitles found. Exiting.")
         exit()
     else:
-        auto = True
+        if not manual:
+            auto = True
+        else:
+            auto = False
         print("Auto-subs found.")
     print("[INFO] Downloading Video and Subtitle")
     os.system(f"youtube-dl -f \'bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/mp4\' {args.youtube} -o \'../inputs/%(title)s.%(ext)s\' --write-sub --write-auto-sub --sub-lang en --sub-format srt")
