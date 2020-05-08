@@ -107,7 +107,6 @@ def return_clips(path, output_path='../intermediate/clip_data.json', flexibility
     flexible_summary = flexibly_extend_summary(selected_indices, flexibility)
 
     sets_of_clips = get_clips_durations(flexible_summary)
-    print(sets_of_clips)
     final_summary_list = get_final_clip_timestamps(sets_of_clips, stopped_stemmed_data)
     with open(output_path, 'w') as f:
         json.dump(final_summary_list, f)
@@ -115,5 +114,5 @@ def return_clips(path, output_path='../intermediate/clip_data.json', flexibility
 if __name__ == "__main__":
    
     start_time = t.time()
-    return_clips('../intermediate/Hypothesis testing-II.json')
+    return_clips('../intermediate/Lec 22, Hypothesis Testing - Two sample test - III_parsed.json')
     print(f"Completed text parsing {round(t.time()-start_time, 2)} seconds")
