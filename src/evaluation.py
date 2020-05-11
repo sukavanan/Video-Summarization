@@ -4,7 +4,7 @@ from text_learning_condensed import return_clips
 from create_clips import start_clip_generation
 from api_parser import parse_subtitle_api
 
-file_id = 'EE-bNr36nyA'
+file_id = ''
 proportion = 0.2
 flexibility = 3
 
@@ -85,6 +85,10 @@ if __name__ == "__main__":
                 break
         print(f"[INFO] Generated {video}\'s clip data")
         # print(duration*proportion, duration)
+
+        ###
+        # Create plots with varying F values.
+        ###
 
         import matplotlib.pyplot as plt
         # plt.plot(x, [duration*proportion]*len(x),'g')
