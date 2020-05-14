@@ -19,3 +19,4 @@ _minted-Documentation/
 *.log
 *.out
 *.pdf
+.ipynb_checkpoints/

@@ -14,7 +14,7 @@ def ffmpeg_worker(file_path, start_time, end_time, output_file_path, encoder):
 	This worker will call the ffmpeg module to crop videos and extract subclips.
 	"""
 	file_path = file_path.replace(' ', r'\ ')
-	os.system(f"ffmpeg -hide_banner -loglevel panic -i {file_path} -ss {start_time} -to {end_time} -b:v 750k -c:v {encoder} -c:a copy {output_file_path}")
+	os.system(f"ffmpeg -hide_banner -loglevel error -i {file_path} -ss {start_time} -to {end_time} -b:v 750k -c:v {encoder} -c:a copy {output_file_path}")
 
 def assign_workers(ip_video_path, clip_data, output_path, encoder):
     import concurrent.futures as cf
@@ -28,7 +28,7 @@ def assign_workers(ip_video_path, clip_data, output_path, encoder):
     print(f"[INFO] Starting final summary video stitching.")
     t.sleep(3)
     output_path = output_path.replace(' ', r'\ ')
-    subprocess.call(f"ffmpeg -hide_banner -loglevel panic -f concat -i ../intermediate/videofiles.txt -c copy -fflags +genpts {output_path}", shell=True)
+    subprocess.call(f"ffmpeg -hide_banner -loglevel error -f concat -i ../intermediate/videofiles.txt -c copy -fflags +genpts {output_path}", shell=True)
     print(f"[INFO] {round(t.time()-start_time, 0)} seconds using {encoder}")
     if len(file_list) > 1:
         print("[INFO] Cleaning Intermediate folder")
