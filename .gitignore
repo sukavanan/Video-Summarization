@@ -1,7 +1,4 @@
 # Ignore folders
-inputs/
-intermediate/
-outputs/
 jupyter/
 .texpadtmp/
 .vscode/
