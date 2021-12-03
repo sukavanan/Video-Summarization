@@ -1,3 +1,10 @@
+'''
+ # @ Author: Shivesh M M
+ # @ Create Time: 2020-04-23 10:56:44
+ # @ Modified by: Shivesh M M
+ # @ Description:
+ '''
+
 import argparse
 import json
 import logging
@@ -109,9 +116,9 @@ def parse_subtitle(filename, vtt=False):
 			if matches is not None:
 				subtitle_element['index'] = count
 				subtitle_element['start_time'] = matches.group(1).strip()
-				subtitle_element['end_time'] = matches.group(2).strip()
-				subtitle_element['duration'] = compute_duration(subtitle_element['start_time'], subtitle_element['end_time'])
+				subtitle_element['end_time'] = matches.group(2).strip().replace(' align:start position:0%','')
 				subtitle_element['text'] = matches.group(3).strip()
+				subtitle_element['duration'] = compute_duration(subtitle_element['start_time'], subtitle_element['end_time'])
 				output_subtitle.append(subtitle_element)
 				count+=1
 	

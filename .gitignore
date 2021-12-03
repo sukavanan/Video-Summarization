@@ -20,3 +20,8 @@ _minted-Documentation/
 *.out
 *.pdf
 .ipynb_checkpoints/
+venv/
+documentation/
+Jupyter NoteBooks/
+*.pxd
+*.png

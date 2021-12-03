@@ -1,7 +1,15 @@
+'''
+ # @ Author: Shivesh M M
+ # @ Create Time: 2020-01-10 21:52:54
+ # @ Modified by: Shivesh M M
+ # @ Description:
+ '''
+
 from datetime import date, datetime, time, timedelta
 import os
 import sys
 import glob
+import json
 
 # VIDEO_NAME = "How\ to\ Move\ the\ Sun\ -\ Stellar\ Engines.mp4"
 VIDEO_NAME = "Hypothesis\ testing-II.mp4"
@@ -29,6 +37,16 @@ def cleanup_intermediate():
 			files = glob.glob('../intermediate/*')
 			for file in files:
 				os.remove(file)
+
+
+def dump_list_of_strings(file_name, output_path):
+	'''get_list_of_strings Function definition. '''
+	loaded_val = json.load(open(file_name))
+	ans = []
+	for i in loaded_val:
+		ans.append(i['text'])
+	import pickle
+	pickle.dump(ans, open(output_path, 'wb'))
 
 ###
 #  This function floors start timestamp and ceils end timestamps

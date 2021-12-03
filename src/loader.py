@@ -1,20 +1,31 @@
+'''
+ # @ Author: Shivesh M M
+ # @ Create Time: 2020-05-14 12:27:30
+ # @ Modified by: Shivesh M M
+ # @ Description:
+ '''
+
 print("[INFO] Importing modules.")
 import argparse, glob, json, os
 import time as t
 from pprint import pprint
+from common_functions import dump_list_of_strings
 import subprocess
+
+# import nltk
+# nltk.download('stopwords', download_dir='./nltk_data')
 
 from create_clips import get_clip_duration, round_durations
 from parse_subs import parse_subtitle, parse_subtitle_yt
-from text_learning_condensed import return_clips
+from text_learning_condensed import create_summary_from_model_output, return_clips
 from api_parser import parse_subtitle_api
 
 def ffmpeg_worker(file_path, start_time, end_time, output_file_path, encoder):
-	"""
-	This worker will call the ffmpeg module to crop videos and extract subclips.
-	"""
-	file_path = file_path.replace(' ', r'\ ')
-	os.system(f"ffmpeg -hide_banner -loglevel error -i {file_path} -ss {start_time} -to {end_time} -b:v 750k -c:v {encoder} -c:a copy {output_file_path}")
+    """
+    This worker will call the ffmpeg module to crop videos and extract subclips.
+    """
+    file_path = file_path.replace(' ', r'\ ')
+    os.system(f"ffmpeg -hide_banner -loglevel error -i {file_path} -ss {start_time} -to {end_time} -b:v 750k -c:v {encoder} -c:a copy {output_file_path}")
 
 def assign_workers(ip_video_path, clip_data, output_path, encoder):
     import concurrent.futures as cf
@@ -34,7 +45,8 @@ def assign_workers(ip_video_path, clip_data, output_path, encoder):
         print("[INFO] Cleaning Intermediate folder")
         files = glob.glob('../intermediate/*')
         for file in files:
-            os.remove(file)
+            if file.split('.')[-1] != 'json':
+                os.remove(file)
 
 print("[INFO] Finished Imports.")
 
@@ -47,80 +59,92 @@ parser.add_argument("-f", "--flexibility", help="Flexibility Parameter", type=in
 parser.add_argument("-l", "--video-length", help="Length of the output video in seconds", type=int)
 args = parser.parse_args() 
 
-if args.use_youtube_parser:
-    print("[INFO] Manually using Youtube Parser")
-if args.use_api_parser:
-    print("[INFO] Manually using Youtube Parser")
+if __name__ == "__main__":
+    if args.use_youtube_parser:
+        print("[INFO] Manually using Youtube Parser")
+    if args.use_api_parser:
+        print("[INFO] Manually using Youtube Parser")
 
-manual = False
-auto = False
-file_list = {}
-files = glob.glob('../inputs/*')
-if len(files) == 0:
-    print("[WARNING] Input folder empty. Checking for Youtube URL in argument")
-    if args.youtube == None:
-        print("[ERROR] No youtube link found. Exiting.")
-        exit()
-    ans = subprocess.check_output(f"youtube-dl --no-warnings --list-subs {args.youtube}", shell=True)
-    if "has no subtitles" in str(ans):
-        print("[WARNING] No manual subtitles found. Checking for automatic subtitles")
-    else:
-        manual = True
-        print("Subs found.")
-    if "has no automatic captions" in str(ans):
-        print("[ERROR] No auto-generated subtitles found. Exiting.")
-        exit()
-    else:
-        if not manual:
-            auto = True
+    manual = False
+    auto = False
+    file_list = {}
+    files = glob.glob('../inputs/*')
+    if len(files) == 0:
+        print("[WARNING] Input folder empty. Checking for Youtube URL in argument")
+        if args.youtube == None:
+            print("[ERROR] No youtube link found. Exiting.")
+            exit()
+        ans = subprocess.check_output(f"youtube-dl --no-warnings --list-subs {args.youtube}", shell=True)
+        if "has no subtitles" in str(ans):
+            print("[WARNING] No manual subtitles found. Checking for automatic subtitles")
         else:
-            auto = False
-        print("Auto-subs found.")
-    print("[INFO] Downloading Video and Subtitle")
-    os.system(f"youtube-dl -f \'bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/mp4\' {args.youtube} -o \'../inputs/%(title)s.%(ext)s\' --write-sub --write-auto-sub --sub-lang en --sub-format srt")
-files = glob.glob('../inputs/*') 
-print("[INFO] Using videos from input folder")
-for file in files:
-    filename = file.split('/')[-1].split('.')[0]
-    if filename not in file_list:
-        file_list[filename] = {}
-    if file.split('/')[-1].split('.')[-1] == 'mp4':
-        file_list[filename]['video'] = file
-    elif file.split('/')[-1].split('.')[-1] in ['srt', 'vtt']:
-        file_list[filename]['sub'] = file
-    # file_list[filename] = file_dict
-print(f"[INFO] Found {len(list(file_list.keys()))} Videos")
+            manual = True
+            print("Subs found.")
+        if "has no automatic captions" in str(ans):
+            print("[ERROR] No auto-generated subtitles found. Exiting.")
+            exit()
+        else:
+            if not manual:
+                auto = True
+            else:
+                auto = False
+            print("Auto-subs found.")
+        print("[INFO] Downloading Video and Subtitle")
+        os.system(f"youtube-dl -f \'bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/mp4\' {args.youtube} -o \'../inputs/%(title)s.%(ext)s\' --write-sub --write-auto-sub --sub-lang en --sub-format srt")
+    files = glob.glob('../inputs/*') 
+    print("[INFO] Using videos from input folder")
+    for file in files:
+        filename = file.split('/')[-1].split('.')[0]
+        if filename not in file_list:
+            file_list[filename] = {}
+        if file.split('/')[-1].split('.')[-1] == 'mp4':
+            file_list[filename]['video'] = file
+        elif file.split('/')[-1].split('.')[-1] in ['srt', 'vtt']:
+            file_list[filename]['sub'] = file
+        # file_list[filename] = file_dict
+    print(f"[INFO] Found {len(list(file_list.keys()))} Videos")
 
-# for video in list(file_list.keys()):
-for video in file_list:
-    print(f"[INFO] Processing subtitle: \"{video}\"")
-    if not args.use_api_parser:
-        if file_list[video]['sub'].split('/')[-1].split('.')[-1] == 'srt':
-            if not auto and not args.use_youtube_parser:
-                output = parse_subtitle(file_list[video]['sub'])
+    # for video in list(file_list.keys()):
+    for video in file_list:
+        print(f"[INFO] Processing subtitle: \"{video}\"")
+        if not args.use_api_parser:
+            if file_list[video]['sub'].split('/')[-1].split('.')[-1] == 'srt':
+                if not auto and not args.use_youtube_parser:
+                    output = parse_subtitle(file_list[video]['sub'])
+                else:
+                    output = parse_subtitle_yt(file_list[video]['sub'])
             else:
-                output = parse_subtitle_yt(file_list[video]['sub'])
+                if not auto and not args.use_youtube_parser:
+                    output = parse_subtitle(file_list[video]['sub'], True)
+                else:
+                    output = parse_subtitle_yt(file_list[video]['sub'], True)
         else:
-            if not auto and not args.use_youtube_parser:
-                output = parse_subtitle(file_list[video]['sub'], True)
-            else:
-                output = parse_subtitle_yt(file_list[video]['sub'], True)
-    else:
-        output = parse_subtitle_api(video)
-    # Write the parsed subtitle file to an intermediate.
-    with open(f"../intermediate/{video}_parsed.json", "w") as f:
-        json.dump(output, f)
-    print(f"[INFO] Converted {video}\'s subtitles to intermediate format")
-    return_clips(f"../intermediate/{video}_parsed.json", output_path=f"../intermediate/{video}_clip_list.json")
-    print(f"[INFO] Generated {video}\'s clip data")
-    start_time = t.time()
-    print(f"[INFO] Starting Subclip generation for {video}")
-    input_video_path = file_list[video]['video']
-    clip_data_path = f"../intermediate/{video}_clip_list.json"
-    output_path=f"../outputs/{video}_summary.mp4"
-    encoder = args.encoder
-    with open(clip_data_path, 'r') as f:
-        clip_data = json.load(f)
-        clip_data = round_durations(get_clip_duration(clip_data))
-    assign_workers(input_video_path, clip_data, output_path, encoder)
-    
+            output = parse_subtitle_api(video)
+        # Write the parsed subtitle file to an intermediate.
+        with open(f"../intermediate/{video}_parsed.json", "w") as f:
+            json.dump(output, f)
+        print(f"[INFO] Converted {video}\'s subtitles to intermediate format")
+        return_clips(f"../intermediate/{video}_parsed.json", output_path=f"../intermediate/{video}_clip_list.json")
+        # print(f"[INFO] Dumping subtitles into pickle file for NLP Model")
+        # dump_list_of_strings(f"../intermediate/{video}_parsed.json", f"../intermediate/{video}_parsed.pkl")
+        print(f"[INFO] Get Predictions from NLP Model")
+        create_summary_from_model_output(f"../intermediate/{video}_parsed.json", output_path=f"../intermediate/{video}_clip_list_NLP.json")
+
+        print(f"[INFO] Generated {video}\'s clip data")
+        start_time = t.time()
+        print(f"[INFO] Starting Subclip generation for {video}")
+        input_video_path = file_list[video]['video']
+        clip_data_path = f"../intermediate/{video}_clip_list.json"
+        output_path=f"../outputs/{video}_summary.mp4"
+        encoder = args.encoder
+        with open(clip_data_path, 'r') as f:
+            clip_data = json.load(f)
+            clip_data = round_durations(get_clip_duration(clip_data))
+        assign_workers(input_video_path, clip_data, output_path, encoder)
+        clip_data_path = f"../intermediate/{video}_clip_list_NLP.json"
+        output_path=f"../outputs/{video}_summary_NLP.mp4"
+        encoder = args.encoder
+        with open(clip_data_path, 'r') as f:
+            clip_data = json.load(f)
+            clip_data = round_durations(get_clip_duration(clip_data))
+        assign_workers(input_video_path, clip_data, output_path, encoder)

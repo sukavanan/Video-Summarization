@@ -1,11 +1,16 @@
+'''
+ # @ Author: Shivesh M M
+ # @ Create Time: 2020-05-14 12:27:30
+ # @ Modified by: Shivesh M M
+ # @ Description:
+ '''
+
 import json
-import os
 import string
 import time as t
 from itertools import groupby
 from operator import itemgetter
 
-import nltk
 import scipy
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -77,11 +82,14 @@ def get_final_clip_timestamps(sets_of_clips, stopped_stemmed_data):
     final_summary_list = []
     for index,clips in enumerate(sets_of_clips):
         data = dict()
-        data['clip_no'] = index+1
-        # print(clips[0], stopped_stemmed_data[clips[0]]['start_time'])
-        data['clip_start'] = stopped_stemmed_data[clips[0]]['start_time']
-        data['clip_end'] = stopped_stemmed_data[clips[-1]]['end_time']
-        final_summary_list.append(data)
+        try:
+            data['clip_no'] = index+1
+            # print(clips[0], stopped_stemmed_data[clips[0]]['start_time'])
+            data['clip_start'] = stopped_stemmed_data[clips[0]]['start_time']
+            data['clip_end'] = stopped_stemmed_data[clips[-1]]['end_time']
+            final_summary_list.append(data)
+        except IndexError:
+            print(clips, stopped_stemmed_data)
     return final_summary_list
 
 def return_clips(path, output_path='../intermediate/clip_data.json', flexibility=FLEXIBILITY, length=TARGET_LENGTH):
@@ -108,6 +116,33 @@ def return_clips(path, output_path='../intermediate/clip_data.json', flexibility
 
     sets_of_clips = get_clips_durations(flexible_summary)
     final_summary_list = get_final_clip_timestamps(sets_of_clips, stopped_stemmed_data)
+    with open(output_path, 'w') as f:
+        json.dump(final_summary_list, f)
+
+def create_summary_from_model_output(path, output_path, flexibility=FLEXIBILITY, length=TARGET_LENGTH):
+    '''create_summary_from_model_output Function definition. '''
+    with open(path) as f:
+        data = json.load(fp=f)
+    
+    ans = []
+    for i in data:
+        ans.append(i['text'])
+
+    from model import predict
+    sentences, scores = predict.video_predictions(ans)
+    for entry, score in zip(data, scores):
+        entry['score'] = score
+    for i in data:
+        if 'score' not in i:
+            i['score'] = 0.0
+    sorted_score_list = sorted(data, key=lambda k: k['score'], reverse=True)
+    naive_summary_elements = return_naive_summary(sorted_score_list, length)
+    selected_indices = indices_selected(naive_summary_elements)
+
+    flexible_summary = flexibly_extend_summary(selected_indices, flexibility)
+
+    sets_of_clips = get_clips_durations(flexible_summary)
+    final_summary_list = get_final_clip_timestamps(sets_of_clips, data)
     with open(output_path, 'w') as f:
         json.dump(final_summary_list, f)
 

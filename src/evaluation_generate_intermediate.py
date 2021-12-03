@@ -1,3 +1,10 @@
+'''
+ # @ Author: Shivesh M M
+ # @ Create Time: 2020-05-14 12:29:10
+ # @ Modified by: Shivesh M M
+ # @ Description:
+ '''
+
 import glob, subprocess, os, json
 from parse_subs import parse_subtitle, parse_subtitle_yt
 from text_learning_condensed import return_clips
@@ -61,7 +68,7 @@ if __name__ == "__main__":
             print("Missing Subtitle, skipping.")
 
         print(f"[INFO] Converted {video}\'s subtitles to intermediate format")
-        a = str(subprocess.check_output('ffprobe -i  "'+file_list[video]['video']+'" 2>&1 |grep "Duration"',shell=True)) 
+        a = str(subprocess.check_output('ffprobe -i  "'+file_list[video]['video']+'" 2>&1 |grep "Duration"',shell=True))
         a = a.split(",")[0].split("Duration:")[1].strip()
         h, m, s = a.split(':')
         duration = int(int(h) * 3600 + int(m) * 60 + float(s))
