@@ -1,3 +1,8 @@
+'''
+ # @ Author: Sukavanan Nanjundan
+ # @ Description: Includes the bi-LSTM model class
+ '''
+
 import warnings
 import torch
 import torch.nn.functional as func

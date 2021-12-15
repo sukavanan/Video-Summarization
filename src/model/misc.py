@@ -1,3 +1,8 @@
+'''
+ # @ Author: Sukavanan Nanjundan
+ # @ Description: Includes miscellaneous functions
+ '''
+
 from functools import reduce
 import numpy as np
 import pickle as pkl
@@ -50,6 +55,7 @@ def read_pkl_file(data_path):
         temp  = pkl.load(fp)
     return fp
 
+#function to get the actual lengths of padded sequences in a batch
 def get_lengths(batch, pad_token, lst = False):
     lens = []
     if not lst:
@@ -74,6 +80,7 @@ def accuracy(pred, targ):
     correct = pred[non_pad_elements].squeeze(1).eq(targ[non_pad_elements])
     return correct.sum() / torch.FloatTensor([targ[non_pad_elements].shape[0]]).to(device)\
 
+#function to divide the document into chunks of size config.model_word_limit
 def divide_chunks(document, n):
     chunks = []
     temp_doc = []

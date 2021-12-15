@@ -1,3 +1,8 @@
+'''
+ # @ Author: Sukavanan Nanjundan
+ # @ Description: Includes functions to predict the labels of the given sequence of words
+ '''
+
 import torch
 import warnings
 import pickle as pkl
@@ -10,6 +15,7 @@ from model.bert_embeddings import *
 warnings.filterwarnings("ignore")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+#function to return the important words from a document as the summary using the predicted labels
 def get_words_from_labels(labels, text, pad_token):
     result_text = []
     for i in range(len(labels)):
@@ -22,6 +28,7 @@ def get_words_from_labels(labels, text, pad_token):
         result_text.append(sent)
     return result_text
 
+#function to predict the labels of the given sequence of words
 def predict(model, text, x):
     lens = get_lengths(text, "<pad>", True)
     labels = []
@@ -35,12 +42,13 @@ def predict(model, text, x):
         labels.append(pred.tolist())
     return labels
 
+#function to predict and return the importance scores of sentences in a given document
+#importance score = number of words in a sentence that are marked as important / len(sentence)
 def video_predictions(sentences, multiple = False):
     lst_sentences = sentences
     document = " ".join(lst_sentences)
     document = document.lower()
     document = re.sub("[^a-zA-Z ]", "", document)
-    # document = document.replace("[^a-zA-Z ]", "", regex = True)
     document = " ".join([x for x in document.split() if x not in stop])
     document = re.sub(" +", " ", document)
     print(len(document.split()))

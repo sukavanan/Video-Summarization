@@ -1,3 +1,8 @@
+'''
+ # @ Author: Sukavanan Nanjundan
+ # @ Description: Includes function to convert data from a document into BERT embeddings
+ '''
+
 import logging
 import torch
 import numpy as np

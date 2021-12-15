@@ -1,3 +1,8 @@
+'''
+ # @ Author: Sukavanan Nanjundan
+ # @ Description: Main function to create the data, extract BERT embeddings and train the bi-LSTM model using the embeddings
+ '''
+
 import pandas as pd
 import numpy as np
 import torch

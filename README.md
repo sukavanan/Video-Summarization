@@ -2,6 +2,8 @@ Video Summarization
 
 Lecture videos tend to run the duration of a class, anywhere from 45 minutes to 90 plus minutes. Users are becoming selective of what they see and prefer to know the substance of the content beforehand. It becomes important to convey the content quickly with as little filler content as possible. Summarizing a long sequenced educational video has many applications in scenarios where time is a critical resource. The aim of the project is to deliver the same i.e. the extractive summaries for educational videos.
 
+First, tokenize the words in the document using the BERT tokenizer function. Then we extract the BERT embeddings for the tokens using the pre-trained BERT-base-uncased model. Next, we untokenize the tokens and combine their emebeddings. Finally we reduce the dimension of the embeddings using PCA. Along with this the words in the document are labelled 0/1 marking their presence in the extractive summary. The embeddings along with the labels are used as input and output data for the bi-LSTM model.
+
 Dataset Used:
 
 1. TVSum50 - a curated collection of human annotated videos (50 videos chosen from YouTube with varying lengths)

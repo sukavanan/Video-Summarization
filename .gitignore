@@ -16,6 +16,7 @@ _minted-Documentation/
 *.log
 *.out
 *.pdf
+!Report.pdf
 .ipynb_checkpoints/
 venv/
 documentation/

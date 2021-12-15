@@ -1,3 +1,8 @@
+'''
+ # @ Author: Sukavanan Nanjundan
+ # @ Description: Includes the training loop for the bi-LSTM model
+ '''
+
 import torch
 import warnings
 from model.model import *

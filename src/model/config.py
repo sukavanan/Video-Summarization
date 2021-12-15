@@ -1,3 +1,8 @@
+'''
+ # @ Author: Sukavanan Nanjundan
+ # @ Description: Includes hyperparameters of the model and other tunable variables
+ '''
+
 from nltk.corpus import stopwords
 import torch
 

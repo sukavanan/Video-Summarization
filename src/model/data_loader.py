@@ -1,3 +1,8 @@
+'''
+ # @ Author: Sukavanan Nanjundan
+ # @ Description: Includes dataloader class and functions to create, pre-process and label the textual data from the DebateSum dataset
+ '''
+
 import pandas as pd
 import numpy as np
 import warnings
